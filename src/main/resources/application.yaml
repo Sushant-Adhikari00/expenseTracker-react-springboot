@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/expense_tracker
-    username: postgres
-    password: postgres
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -27,5 +27,5 @@ spring:
 
 app:
   jwt:
-    secret: 3d8f2a1c9b4e7f0d6a5c2e8b1f4a7d0e3c6b9f2a5d8e1b4c7f0a3d6e9b2c5f8a
+    secret: ${JWT_SECRET}
     expiration-ms: 86400000   # 24 hours
