@@ -9,19 +9,31 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface IncomeMapper {
 
-    // Entity → Response DTO
+    // Income entity → IncomeResponse DTO
+    @Mapping(target = "id",         source = "id")
+    @Mapping(target = "source",     source = "source")
+    @Mapping(target = "amount",     source = "amount")
+    @Mapping(target = "date",       source = "date")
+    @Mapping(target = "category",   source = "category")
+    @Mapping(target = "note",       source = "note")
+    @Mapping(target = "createdAt",  source = "createdAt")
     IncomeResponse toResponse(Income income);
 
-    // Request DTO → Entity
-    @Mapping(target = "id", ignore = true)
+    // IncomeRequest + User → Income entity
+    @Mapping(target = "id",        ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "user", source = "user")
+    @Mapping(target = "source",    source = "request.source")
+    @Mapping(target = "amount",    source = "request.amount")
+    @Mapping(target = "date",      source = "request.date")
+    @Mapping(target = "category",  source = "request.category")
+    @Mapping(target = "note",      source = "request.note")
+    @Mapping(target = "user",      source = "user")
     Income toEntity(IncomeRequest request, User user);
 
-    // Update existing entity fields from request (ignores null)
+    // Partial update — only non-null fields overwrite existing entity
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "id",        ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "user",      ignore = true)
     void updateEntityFromRequest(IncomeRequest request, @MappingTarget Income income);
 }

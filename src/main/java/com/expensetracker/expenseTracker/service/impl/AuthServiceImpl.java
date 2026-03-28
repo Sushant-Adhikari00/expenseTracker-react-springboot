@@ -8,6 +8,7 @@ import com.expensetracker.expenseTracker.mapper.UserMapper;
 import com.expensetracker.expenseTracker.repository.UserRepository;
 import com.expensetracker.expenseTracker.security.JwtTokenProvider;
 import com.expensetracker.expenseTracker.service.AuthService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,25 +31,19 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
-        // Check duplicate email
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalStateException(
                     "Email already registered: " + request.getEmail());
         }
 
-        // Build and save user
-        User user = User.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
+        // Mapper builds entity — service only sets encoded password
+        User user = userMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         User savedUser = userRepository.save(user);
 
-        // Generate JWT
+        // Mapper builds response — service only attaches token
         String token = jwtTokenProvider.generateTokenFromEmail(savedUser.getEmail());
-
-        // Map to response and attach token
         AuthResponse response = userMapper.toAuthResponse(savedUser);
         response.setToken(token);
 
@@ -58,7 +53,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        // Spring Security handles credential validation
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -66,12 +60,11 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        // Load user for response data
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        // Mapper builds response — service only attaches token
         String token = jwtTokenProvider.generateToken(authentication);
-
         AuthResponse response = userMapper.toAuthResponse(user);
         response.setToken(token);
 
