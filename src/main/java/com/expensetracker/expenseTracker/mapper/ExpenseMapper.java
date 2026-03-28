@@ -2,9 +2,11 @@ package com.expensetracker.expenseTracker.mapper;
 
 import com.expensetracker.expenseTracker.dto.request.ExpenseRequest;
 import com.expensetracker.expenseTracker.dto.response.ExpenseResponse;
+import com.expensetracker.expenseTracker.dto.response.PageResponse;
 import com.expensetracker.expenseTracker.entity.Expense;
 import com.expensetracker.expenseTracker.entity.User;
 import org.mapstruct.*;
+import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = "spring")
 public interface ExpenseMapper {
@@ -36,4 +38,17 @@ public interface ExpenseMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "user",      ignore = true)
     void updateEntityFromRequest(ExpenseRequest request, @MappingTarget Expense expense);
+
+    // Page<Expense> → PageResponse<ExpenseResponse>
+    default PageResponse<ExpenseResponse> toPageResponse(Page<Expense> page) {
+        return PageResponse.<ExpenseResponse>builder()
+                .content(page.getContent().stream().map(this::toResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .build();
+    }
 }

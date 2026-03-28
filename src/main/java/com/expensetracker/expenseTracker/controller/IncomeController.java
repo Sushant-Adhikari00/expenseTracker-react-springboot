@@ -2,9 +2,13 @@ package com.expensetracker.expenseTracker.controller;
 
 import com.expensetracker.expenseTracker.dto.request.IncomeRequest;
 import com.expensetracker.expenseTracker.dto.response.IncomeResponse;
+import com.expensetracker.expenseTracker.dto.response.PageResponse;
 import com.expensetracker.expenseTracker.service.IncomeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +31,14 @@ public class IncomeController {
                 .body(incomeService.create(request));
     }
 
-    // GET /api/incomes
+    // GET /api/incomes?page=0&size=10
     @GetMapping
-    public ResponseEntity<List<IncomeResponse>> getAll() {
-        return ResponseEntity.ok(incomeService.getAllForCurrentUser());
+    public ResponseEntity<PageResponse<IncomeResponse>> getAll(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
+        return ResponseEntity.ok(incomeService.getAllForCurrentUser(pageable));
     }
 
     // GET /api/incomes/{id}

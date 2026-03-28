@@ -1,6 +1,8 @@
 package com.expensetracker.expenseTracker.repository;
 
 import com.expensetracker.expenseTracker.entity.Income;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +16,9 @@ import java.util.List;
 public interface IncomeRepository extends JpaRepository<Income, Long> {
 
     List<Income> findByUserIdOrderByDateDesc(Long userId);
+
+    // Paginated — used by GET /api/incomes
+    Page<Income> findByUserIdOrderByDateDesc(Long userId, Pageable pageable);
 
     // Fetch incomes within a date range for a user
     List<Income> findByUserIdAndDateBetweenOrderByDateDesc(

@@ -2,6 +2,7 @@ package com.expensetracker.expenseTracker.service.impl;
 
 import com.expensetracker.expenseTracker.dto.request.IncomeRequest;
 import com.expensetracker.expenseTracker.dto.response.IncomeResponse;
+import com.expensetracker.expenseTracker.dto.response.PageResponse;
 import com.expensetracker.expenseTracker.entity.Income;
 import com.expensetracker.expenseTracker.entity.User;
 import com.expensetracker.expenseTracker.mapper.IncomeMapper;
@@ -11,6 +12,7 @@ import com.expensetracker.expenseTracker.security.SecurityUtils;
 import com.expensetracker.expenseTracker.service.IncomeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,15 +47,12 @@ public class IncomeServiceImpl implements IncomeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<IncomeResponse> getAllForCurrentUser() {
+    public PageResponse<IncomeResponse> getAllForCurrentUser(Pageable pageable) {
         Long userId = getCurrentUser().getId();
 
-        // Mapper converts each entity → response
-        return incomeRepository
-                .findByUserIdOrderByDateDesc(userId)
-                .stream()
-                .map(incomeMapper::toResponse)
-                .toList();
+        // Mapper converts Page<Income> → PageResponse<IncomeResponse>
+        return incomeMapper.toPageResponse(
+                incomeRepository.findByUserIdOrderByDateDesc(userId, pageable));
     }
 
     @Override

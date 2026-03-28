@@ -1,6 +1,8 @@
 package com.expensetracker.expenseTracker.repository;
 
 import com.expensetracker.expenseTracker.entity.Expense;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,9 @@ import java.util.List;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+
+    // Paginated — used by GET /api/expenses
+    Page<Expense> findByUserIdOrderByDateDesc(Long userId, Pageable pageable);
 
     List<Expense> findByUserIdOrderByDateDesc(Long userId);
 

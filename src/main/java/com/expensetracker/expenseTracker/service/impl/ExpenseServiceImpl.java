@@ -2,6 +2,7 @@ package com.expensetracker.expenseTracker.service.impl;
 
 import com.expensetracker.expenseTracker.dto.request.ExpenseRequest;
 import com.expensetracker.expenseTracker.dto.response.ExpenseResponse;
+import com.expensetracker.expenseTracker.dto.response.PageResponse;
 import com.expensetracker.expenseTracker.entity.Expense;
 import com.expensetracker.expenseTracker.entity.User;
 import com.expensetracker.expenseTracker.mapper.ExpenseMapper;
@@ -11,6 +12,7 @@ import com.expensetracker.expenseTracker.security.SecurityUtils;
 import com.expensetracker.expenseTracker.service.ExpenseService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,15 +47,12 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExpenseResponse> getAllForCurrentUser() {
+    public PageResponse<ExpenseResponse> getAllForCurrentUser(Pageable pageable) {
         Long userId = getCurrentUser().getId();
 
-        // Mapper converts each entity → response
-        return expenseRepository
-                .findByUserIdOrderByDateDesc(userId)
-                .stream()
-                .map(expenseMapper::toResponse)
-                .toList();
+        // Mapper converts Page<Expense> → PageResponse<ExpenseResponse>
+        return expenseMapper.toPageResponse(
+                expenseRepository.findByUserIdOrderByDateDesc(userId, pageable));
     }
 
     @Override
