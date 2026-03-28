@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8084
 
 spring:
   datasource:
@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update        # use 'validate' in production
+      ddl-auto: none       # use 'validate' in production
     show-sql: false
     properties:
       hibernate:
