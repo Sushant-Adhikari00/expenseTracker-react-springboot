@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8080
 
 spring:
   datasource:
@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none       # use 'validate' in production
+      ddl-auto: validate       # use 'validate' in production
     show-sql: false
     properties:
       hibernate:
@@ -24,6 +24,8 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
 
 app:
   jwt:
