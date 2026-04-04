@@ -3,7 +3,7 @@ package com.expensetracker.expenseTracker.config;
 import com.expensetracker.expenseTracker.security.JwtAuthenticationFilter;
 import com.expensetracker.expenseTracker.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -29,17 +29,17 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableConfigurationProperties(CorsProperties.class)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final UserDetailsServiceImpl  userDetailsService;
-
-    @Value("${app.cors.allowed-origins}")
-    private List<String> allowedOrigins;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final CorsProperties corsProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -63,46 +63,40 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ── Origins — loaded from application.yml ────────────────────────────
-        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
 
-        // ── Methods — only what the API uses ────────────────────────────────
         config.setAllowedMethods(List.of(
                 HttpMethod.GET.name(),
                 HttpMethod.POST.name(),
                 HttpMethod.PUT.name(),
                 HttpMethod.PATCH.name(),
                 HttpMethod.DELETE.name(),
-                HttpMethod.OPTIONS.name()       // required for preflight
+                HttpMethod.OPTIONS.name()
         ));
 
-        // ── Allowed Headers — explicit list instead of wildcard ──────────────
         config.setAllowedHeaders(List.of(
-                HttpHeaders.AUTHORIZATION,                   // Bearer JWT token
-                HttpHeaders.CONTENT_TYPE,                    // application/json
-                HttpHeaders.ACCEPT,                          // application/json
-                HttpHeaders.ORIGIN,                          // preflight
-                HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, // preflight
-                HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD,  // preflight
-                "X-Requested-With"                           // AJAX indicator
+                HttpHeaders.AUTHORIZATION,
+                HttpHeaders.CONTENT_TYPE,
+                HttpHeaders.ACCEPT,
+                HttpHeaders.ORIGIN,
+                HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS,
+                HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD,
+                "X-Requested-With"
         ));
 
-        // ── Exposed Headers — what JS can read from response ─────────────────
         config.setExposedHeaders(List.of(
-                HttpHeaders.AUTHORIZATION,  // refreshed token if needed
-                "Retry-After",              // rate limit info
-                "X-Total-Count"             // pagination total
+                HttpHeaders.AUTHORIZATION,
+                "Retry-After",
+                "X-Total-Count"
         ));
 
-        // ── Credentials — required for Authorization header ──────────────────
         config.setAllowCredentials(true);
-
-        // ── Preflight cache — browser caches for 1 hour ──────────────────────
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
+
         return source;
     }
 
