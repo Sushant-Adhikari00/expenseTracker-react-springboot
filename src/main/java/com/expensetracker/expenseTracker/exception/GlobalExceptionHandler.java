@@ -15,19 +15,28 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+
     // Validation errors (@Valid failed)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(
             MethodArgumentNotValidException ex) {
 
+        // Group multiple messages per field with a comma
         Map<String, String> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
                         fe -> fe.getDefaultMessage() != null
-                                ? fe.getDefaultMessage() : "Invalid value"
+                                ? fe.getDefaultMessage()
+                                : "Invalid value",
+                        // Merge multiple violations for same field
+                        (existing, replacement) -> existing + ". " + replacement
                 ));
+
+        fieldErrors.forEach((field, msg) ->
+                System.out.println("Validation — " + field + ": " + msg));
 
         return ResponseEntity.badRequest().body(
                 ApiError.builder()
@@ -35,6 +44,19 @@ public class GlobalExceptionHandler {
                         .message("Validation failed")
                         .timestamp(LocalDateTime.now())
                         .fieldErrors(fieldErrors)
+                        .build());
+    }
+
+    //Rate Limiting handler
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ApiError> handleRateLimit(RateLimitException ex) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)           // 429
+                .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
+                .body(ApiError.builder()
+                        .status(429)
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
                         .build());
     }
 

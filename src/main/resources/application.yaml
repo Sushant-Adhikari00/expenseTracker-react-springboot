@@ -27,7 +27,28 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=1h
+
 app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: 86400000   # 24 hours
+
+  rate-limit:
+    login:
+      capacity: 5           # max 5 attempts
+      refill-tokens: 5      # refill 5 tokens
+      refill-minutes: 15    # every 15 minutes
+    register:
+      capacity: 3           # max 3 registrations
+      refill-tokens: 3      # refill 3 tokens
+      refill-minutes: 60    # every 60 minutes
+
+      cors:
+        allowed-origins:
+          - "http://localhost:5173"
+          - "http://127.0.0.1:5173"
+          - "http://localhost:4173"    # vite preview

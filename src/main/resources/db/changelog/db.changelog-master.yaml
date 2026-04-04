@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/migrations/003-create-expenses-table.yaml
   - include:
       file: db/changelog/migrations/004-create-saving-goals-table.yaml
+  - include:
+      file: db/changelog/migrations/005-create-token-blacklist-table.yaml

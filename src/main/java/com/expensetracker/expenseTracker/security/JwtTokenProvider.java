@@ -78,4 +78,9 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    // Add this method to JwtTokenProvider.java
+    public Date getExpirationFromToken(String token) {
+        return parseClaims(token).getExpiration();
+    }
 }

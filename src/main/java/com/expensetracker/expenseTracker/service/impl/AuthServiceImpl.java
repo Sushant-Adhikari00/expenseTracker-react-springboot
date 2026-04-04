@@ -8,6 +8,7 @@ import com.expensetracker.expenseTracker.mapper.UserMapper;
 import com.expensetracker.expenseTracker.repository.UserRepository;
 import com.expensetracker.expenseTracker.security.JwtTokenProvider;
 import com.expensetracker.expenseTracker.service.AuthService;
+import com.expensetracker.expenseTracker.service.TokenBlacklistService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +27,15 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final TokenBlacklistService tokenBlacklistService;
+
+    @Override
+    public void logout(String token) {
+        if (token != null && !token.isBlank()) {
+            tokenBlacklistService.blacklistToken(token);
+           //log.info("User logged out — token blacklisted");
+        }
+    }
 
     @Override
     @Transactional
